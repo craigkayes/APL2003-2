@@ -1,0 +1,43 @@
+name: Trigger auto deployment for aca-apl2003
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/aca-apl2003-AutoDeployTrigger-80e82089-5888-4371-8120-bc9840e7318a.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.ACAAPL2003_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: acrapl2003ck.azurecr.io
+          registryUsername: ${{ secrets.ACAAPL2003_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.ACAAPL2003_REGISTRY_PASSWORD }}
+          containerAppName: aca-apl2003
+          resourceGroup: RG1
+          imageToBuild: acrapl2003ck.azurecr.io/aspnetcorecontainer:${{ github.sha }}
+          
+            
+
+     
+
